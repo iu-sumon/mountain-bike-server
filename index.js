@@ -23,6 +23,7 @@ async function run() {
         const partsCollection = client.db('mountain-bicycle').collection('parts')
         const reviewsCollection = client.db('mountain-bicycle').collection('reviews')
         const ordersCollection = client.db('mountain-bicycle').collection('orders')
+        const profilesCollection = client.db('my_profile').collection('profiles')
 
         //====================================== Get all brands loading API
 
@@ -67,11 +68,25 @@ async function run() {
             res.send(result)
 
         })
-        //======================================Booking API
+        //======================================Order added API
         app.post('/order', async (req, res) => {
 
             const order = req.body;
             const result = await ordersCollection.insertOne(order);
+            res.send(result)
+        })
+        //====================================== Review Added API
+        app.post('/reviews', async (req, res) => {
+
+            const review = req.body;
+            const result = await reviewsCollection.insertOne(review);
+            res.send(result)
+        })
+        //====================================== Profile Added API
+        app.post('/profiles', async (req, res) => {
+
+            const profile = req.body;
+            const result = await profilesCollection.insertOne(profile);
             res.send(result)
         })
 
