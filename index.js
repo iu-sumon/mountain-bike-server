@@ -1,5 +1,6 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express')
+const jwt = require('jsonwebtoken');
 const cors = require('cors')
 const port = process.env.PORT || 5000;
 const app = express()
@@ -8,8 +9,29 @@ require('dotenv').config()
 app.use(cors())
 app.use(express.json())
 
+//========================jwt verify function
+function verifyJWT(req, res, next) {
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+
+        return res.status(401).send({ message: 'UnAuthorized access' });
+
+    }
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
 
 
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' })
+        }
+
+
+        req.decoded = decoded;
+        next();
+    });
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4adv5.mongodb.net/?retryWrites=true&w=majority`;
@@ -23,7 +45,9 @@ async function run() {
         const partsCollection = client.db('mountain-bicycle').collection('parts')
         const reviewsCollection = client.db('mountain-bicycle').collection('reviews')
         const ordersCollection = client.db('mountain-bicycle').collection('orders')
+        const userCollection = client.db('mountain-bicycle').collection('users')
         const profilesCollection = client.db('my_profile').collection('profiles')
+
 
         //====================================== Get all brands loading API
 
@@ -111,7 +135,24 @@ async function run() {
             return res.send(orders);
 
         })
+        //====================================New and old User checking api (JWT main API)
 
+        app.put('/user/:email', async (req, res) => {
+
+            const email = req.params.email;
+
+            const user = req.body;
+            const filter = { email: email };
+
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, token })
+        });
 
 
     }
