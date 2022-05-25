@@ -127,7 +127,7 @@ async function run() {
         })
         //====================================== My Order API 
 
-        app.get('/order', async (req, res) => {
+        app.get('/order', verifyJWT, async (req, res) => {
 
             const email = req.query.email;
             const query = { email: email };
