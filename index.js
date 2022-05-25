@@ -71,6 +71,13 @@ async function run() {
             const parts = (await partsCollection.find(query).toArray()).reverse();
             res.send(parts)
         })
+        //====================================== Get all Parts loading API
+
+        app.get('/orders', async (req, res) => {
+            const query = {};
+            const orders =await ordersCollection.find(query).toArray()
+            res.send(orders)
+        })
 
         //======================================= Get all users  Loading Api
 
