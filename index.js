@@ -100,6 +100,15 @@ async function run() {
             res.send(result)
 
         })
+        //===================================== Deleting Order API
+        app.delete('/part/:id', async (req, res) => {
+
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await partsCollection.deleteOne(query);
+            res.send(result)
+
+        })
         //======================================Order added API
         app.post('/order', async (req, res) => {
 
