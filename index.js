@@ -108,6 +108,15 @@ async function run() {
             const result = await reviewsCollection.insertOne(review);
             res.send(result)
         })
+        
+        //====================================== Parts Added API
+
+        app.post('/parts', async (req, res) => {
+
+            const part = req.body;
+            const result = await partsCollection.insertOne(part);
+            res.send(result)
+        })
 
 
         //====================================== update profile API
