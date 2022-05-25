@@ -72,6 +72,14 @@ async function run() {
             res.send(parts)
         })
 
+        //======================================= Get all users  Loading Api
+
+        app.get('/users', verifyJWT, async (req, res) => {
+
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        });
+
         //=======================================Single Parts data loading API
 
         app.get('/purchasePage/:id', async (req, res) => {
@@ -108,7 +116,7 @@ async function run() {
             const result = await reviewsCollection.insertOne(review);
             res.send(result)
         })
-        
+
         //====================================== Parts Added API
 
         app.post('/parts', async (req, res) => {
@@ -142,8 +150,36 @@ async function run() {
             const query = { email: email };
             const orders = await ordersCollection.find(query).toArray();
             return res.send(orders);
-
         })
+
+        //======================================= Make a admin API
+
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+
+            const email = req.params.email;
+            const requester = req.decoded.email; // je onno user k admin banate chay  tar email neya hosche  
+            const requesterAccount = await userCollection.findOne({ email: requester }); // sei email diye sei user k khuje ber kora hosche 
+
+            if (requesterAccount.role === 'admin') { // admin requester user a jodi role property thake tahole se onno user k admin banate parbe
+
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                };
+
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+
+            }
+
+            else {
+                res.status(403).send({ message: 'forbidden' });
+            }
+
+        });
+
+
+
         //====================================New and old User checking api (JWT main API)
 
         app.put('/user/:email', async (req, res) => {
