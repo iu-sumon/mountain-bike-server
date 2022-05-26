@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors')
 const port = process.env.PORT || 5000;
 const app = express()
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')('sk_test_51L3cIjAExOLQK2IMl6MeJW1v1F2AjvJhdaK9baFoHp62qajgkrJXopHHgTSEipFA2zbsdzKs5LiqGyrcwHYEX22E00adutzSPN');
 
 
 
@@ -50,6 +50,7 @@ async function run() {
         const ordersCollection = client.db('mountain-bicycle').collection('orders')
         const userCollection = client.db('mountain-bicycle').collection('users')
         const profilesCollection = client.db('my_profile').collection('profiles')
+        const paymentCollection = client.db('my_profile').collection('payment')
 
 
         //====================================New and old User checking api (JWT main API)
@@ -128,21 +129,22 @@ async function run() {
         });
 
         //==================================payment api
-        app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+        app.post("/create-payment-intent", async (req, res) => {
             const order = req.body;
             const price = order.price;
             const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create({
-              amount: amount,
-              currency: "usd",
-              payment_method_types: ["card"],
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ["card"],
             });
+           
             res.send({ clientSecret: paymentIntent.client_secret });
-          });
-        
+        });
+
         // payment patch
 
-        app.patch('/order/:id', verifyJWT, async (req, res) => {
+        app.patch('/order/:id', async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
             const filter = { _id: ObjectId(id) };
@@ -154,7 +156,8 @@ async function run() {
             }
 
             const result = await paymentCollection.insertOne(payment);
-            const updatedBooking = await bookingCollection.updateOne(filter, updatedDoc);
+            const updatedBooking = await ordersCollection.updateOne(filter, updatedDoc);
+            
             res.send(updatedBooking);
         })
 
@@ -283,10 +286,10 @@ async function run() {
         app.put('/profile', async (req, res) => {
 
             const email = req.query.email;
-            console.log(email);
+
             const profile = req.body;
             const filter = { email: email };
-            console.log(filter);
+
             const options = { upsert: true };
             const updatedDoc = {
                 $set: profile
