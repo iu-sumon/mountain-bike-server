@@ -42,7 +42,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
-        await client.connect();
+        client.connect();
 
         const brandsCollection = client.db('mountain-bicycle').collection('brands')
         const partsCollection = client.db('mountain-bicycle').collection('parts')
